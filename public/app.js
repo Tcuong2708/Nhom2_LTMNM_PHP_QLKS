@@ -6,10 +6,11 @@
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Khá»Ÿi táº¡o UI chung
     initUI();
-    
+
     // 2. Fetch dá»¯ liá»‡u ngÆ°á»i dÃ¹ng tá»« Backend Java (localhost:8080)
-    fetchUserData();
-    
+    // 2. Fetch API ngung hoat dong do chuyen qua Laravel Blade
+    // fetchUserData();
+
     // 3. Khá»Ÿi táº¡o luá»“ng Chatbot káº¿t ná»‘i Python (localhost:5000)
     setupChatBot();
 });
@@ -20,10 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function initUI() {
     // Náº¿u cÃ³ query param success tá»« backend redirect vá», hiá»ƒn thá»‹ toast
     const urlParams = new URLSearchParams(window.location.search);
-    if(urlParams.has('success')) {
+    if (urlParams.has('success')) {
         showToast(urlParams.get('success'), 'success');
     }
-    if(urlParams.has('error')) {
+    if (urlParams.has('error')) {
         showToast(urlParams.get('error'), 'error');
     }
 }
@@ -36,7 +37,7 @@ function showToast(message, type = 'success') {
     const iconNode = document.getElementById('toastIcon');
     const messageNode = document.getElementById('toastMessage');
 
-    if(!toastNode) return;
+    if (!toastNode) return;
 
     messageNode.innerText = message;
     toastNode.classList.remove('bg-navy', 'bg-danger', 'bg-secondary');
@@ -66,8 +67,11 @@ async function fetchUserData() {
 
     if (mockRole) {
         let roleID = 3; // guest
-        if (mockRole === 'admin') roleID = 1;
-        else if (mockRole === 'staff') roleID = 2;
+        if (mockRole === 'admin') roleID = 1; // Quản trị viên
+        else if (mockRole === 'director' || mockRole === 'manager') roleID = 7; // Bộ phận quản lý
+        else if (mockRole === 'accountant') roleID = 6; // Kế toán
+        else if (mockRole === 'housekeeping') roleID = 4; // Buồng phòng
+        else if (mockRole === 'staff' || mockRole === 'receptionist') roleID = 2; // Lễ tân
 
         const mockData = {
             isLoggedIn: true,
@@ -79,8 +83,8 @@ async function fetchUserData() {
     }
 
     try {
-        const API_URL = "http://localhost:8080/api/user/profile"; 
-        
+        const API_URL = "http://localhost:8080/api/user/profile";
+
         const response = await fetch(API_URL, {
             method: 'GET',
             headers: {
@@ -89,16 +93,16 @@ async function fetchUserData() {
             }
         });
 
-        if(response.ok) {
+        if (response.ok) {
             const data = await response.json();
             renderUserMenu(data);
         } else {
             renderUserMenu(null); // Render menu khách (chưa đăng nhập)
         }
-        
+
     } catch (error) {
         console.warn("API Backend chưa chạy, hiển thị menu Khách:", error.message);
-        renderUserMenu(null); 
+        renderUserMenu(null);
     }
 }
 
@@ -107,7 +111,7 @@ function renderUserMenu(data) {
 
     const dropdownMenu = document.getElementById('user-dropdown-menu');
     const userIcon = document.getElementById('user-icon');
-    
+
     let html = [];
 
     if (!data || !data.isLoggedIn) {
@@ -126,54 +130,78 @@ function renderUserMenu(data) {
         // Header xin chào
         html.push(`
             <li>
-                <div class="dropdown-header-user px-3 py-2 fw-bold text-primary border-bottom" style="background-color: #f8f9fa;">
+                <div class="dropdown-header-user px-3 py-2 fw-bold text-primary-custom border-bottom" style="background-color: #f8f9fa;">
                     Xin chào, ${username}
                 </div>
             </li>
         `);
 
         if (roleID === 1) {
-            // ADMIN: Toàn quyền
+            // QUẢN TRỊ VIÊN HỆ THỐNG
             html.push(`
-                <li><div class="dropdown-header text-uppercase text-danger fw-bold mt-2" style="font-size: 0.75rem; padding-left: 1rem;">Quản trị hệ thống</div></li>
-                <li><a class="dropdown-item" href="${basePath}admin/rooms/index.html"><i class="bi bi-houses-fill me-2 text-secondary"></i>Quản lý Phòng</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/category/index.html"><i class="bi bi-tags-fill me-2 text-secondary"></i>Quản lý Loại phòng</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/service/index.html"><i class="bi bi-stars me-2 text-secondary"></i>Quản lý Dịch vụ</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/users/index.html"><i class="bi bi-people-fill me-2 text-secondary"></i>Quản lý Tài khoản</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/reviews/index.html"><i class="bi bi-chat-square-heart-fill me-2 text-secondary"></i>Quản lý Đánh giá</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/statistical/index.html"><i class="bi bi-graph-up-arrow me-2 text-secondary"></i>Thống kê Doanh thu</a></li>
-                <li><a class="dropdown-item" href="http://localhost:8080/api/rooms" target="_blank"><i class="bi bi-code-slash me-2 text-danger"></i>API Quản lý Phòng</a></li>
+                <li><div class="dropdown-header text-uppercase text-primary-custom fw-bold mt-2" style="font-size: 0.75rem; padding-left: 1rem;">Quản trị hệ thống</div></li>
+                <li><a class="dropdown-item" href="${basePath}admin/users/index.html"><i class="bi bi-people-fill me-2" style="color: var(--accent-color);"></i>Quản lý Người dùng</a></li>
                 <li><hr class="dropdown-divider" /></li>
-                
-                <li><div class="dropdown-header text-uppercase text-warning fw-bold mt-1" style="font-size: 0.75rem; padding-left: 1rem;">Nghiệp vụ lễ tân</div></li>
-                <li><a class="dropdown-item" href="${basePath}staff/room-map/index.html"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>Sơ đồ phòng trực quan</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/invoice/index.html"><i class="bi bi-journal-bookmark-fill me-2 text-warning"></i>Quản lý Hoá Đơn</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/check-in/index.html"><i class="bi bi-box-arrow-in-right me-2 text-warning"></i>Xử lý Nhận phòng (Check-in)</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/check-out/index.html"><i class="bi bi-box-arrow-left me-2 text-warning"></i>Xử lý Trả phòng (Check-out)</a></li>
+                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2" style="color: var(--accent-color);"></i>Hồ sơ của tôi</a></li>
+                <li><a class="dropdown-item text-danger fw-bold mt-2" href="#" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+            `);
+        } else if (roleID === 7) {
+            // BỘ PHẬN QUẢN LÝ
+            html.push(`
+                <li><div class="dropdown-header text-uppercase text-primary-custom fw-bold mt-2" style="font-size: 0.75rem; padding-left: 1rem;">Bộ phận Quản lý</div></li>
+                <li><a class="dropdown-item" href="${basePath}admin/rooms/index.html"><i class="bi bi-houses-fill me-2" style="color: var(--accent-color);"></i>Quản lý Phòng</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/category/index.html"><i class="bi bi-tags-fill me-2" style="color: var(--accent-color);"></i>Quản lý Loại phòng</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/service/index.html"><i class="bi bi-stars me-2" style="color: var(--accent-color);"></i>Quản lý Dịch vụ</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/customers/index.html"><i class="bi bi-person-badge-fill me-2" style="color: var(--accent-color);"></i>Quản lý Khách hàng</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/employees/index.html"><i class="bi bi-person-lines-fill me-2" style="color: var(--accent-color);"></i>Quản lý Nhân viên</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/promotions/index.html"><i class="bi bi-gift-fill me-2" style="color: var(--accent-color);"></i>Quản lý Khuyến mãi</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/loyalty/index.html"><i class="bi bi-star-fill me-2" style="color: var(--accent-color);"></i>Chính sách Tích điểm</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/statistical/index.html"><i class="bi bi-graph-up-arrow me-2" style="color: var(--accent-color);"></i>Thống kê Doanh thu</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/reports/index.html"><i class="bi bi-file-earmark-bar-graph-fill me-2" style="color: var(--accent-color);"></i>Xuất Báo cáo thống kê</a></li>
                 <li><hr class="dropdown-divider" /></li>
-                
-                <li><a class="dropdown-item" href="${basePath}home/booking/history.html"><i class="bi bi-clock-history me-2"></i>Lịch sử đặt phòng</a></li>
-                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi</a></li>
+                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2" style="color: var(--accent-color);"></i>Hồ sơ của tôi</a></li>
+                <li><a class="dropdown-item text-danger fw-bold mt-2" href="#" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+            `);
+        } else if (roleID === 6) {
+            // KẾ TOÁN
+            html.push(`
+                <li><div class="dropdown-header text-uppercase text-primary-custom fw-bold mt-2" style="font-size: 0.75rem; padding-left: 1rem;">Nghiệp vụ Kế toán</div></li>
+                <li><a class="dropdown-item" href="${basePath}admin/statistical/index.html"><i class="bi bi-graph-up-arrow me-2" style="color: var(--accent-color);"></i>Thống kê Doanh thu</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/reports/index.html"><i class="bi bi-file-earmark-bar-graph-fill me-2" style="color: var(--accent-color);"></i>Xuất Báo cáo thống kê</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2" style="color: var(--accent-color);"></i>Hồ sơ của tôi</a></li>
+                <li><a class="dropdown-item text-danger fw-bold mt-2" href="#" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+            `);
+
+        } else if (roleID === 4) {
+            // NHÂN VIÊN BUỒNG PHÒNG
+            html.push(`
+                <li><div class="dropdown-header text-uppercase text-primary-custom fw-bold mt-2" style="font-size: 0.75rem; padding-left: 1rem;">Nghiệp vụ Buồng phòng</div></li>
+                <li><a class="dropdown-item" href="${basePath}staff/room-status/index.html"><i class="bi bi-arrow-repeat me-2" style="color: var(--accent-color);"></i>Cập nhật Trạng thái phòng</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2" style="color: var(--accent-color);"></i>Hồ sơ của tôi</a></li>
                 <li><a class="dropdown-item text-danger fw-bold mt-2" href="#" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
             `);
         } else if (roleID === 2) {
-            // NHÂN VIÊN LỄ TÂN: Nghiệp vụ + Hồ sơ
+            // LỄ TÂN
             html.push(`
-                <li><div class="dropdown-header text-uppercase text-warning fw-bold mt-1" style="font-size: 0.75rem; padding-left: 1rem;">Nghiệp vụ lễ tân</div></li>
-                <li><a class="dropdown-item" href="${basePath}staff/room-map/index.html"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>Sơ đồ phòng trực quan</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/invoice/index.html"><i class="bi bi-journal-bookmark-fill me-2 text-warning"></i>Quản lý Hoá Đơn</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/check-in/index.html"><i class="bi bi-box-arrow-in-right me-2 text-warning"></i>Xử lý Nhận phòng (Check-in)</a></li>
-                <li><a class="dropdown-item" href="${basePath}admin/check-out/index.html"><i class="bi bi-box-arrow-left me-2 text-warning"></i>Xử lý Trả phòng (Check-out)</a></li>
+                <li><div class="dropdown-header text-uppercase text-primary-custom fw-bold mt-1" style="font-size: 0.75rem; padding-left: 1rem;">Nghiệp vụ lễ tân</div></li>
+                <li><a class="dropdown-item" href="${basePath}staff/room-map/index.html"><i class="bi bi-grid-3x3-gap-fill me-2" style="color: var(--accent-color);"></i>Sơ đồ phòng trực quan</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/booking/index.html"><i class="bi bi-calendar-check-fill me-2" style="color: var(--accent-color);"></i>Quản lý Đặt phòng</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/invoice/index.html"><i class="bi bi-journal-bookmark-fill me-2" style="color: var(--accent-color);"></i>Quản lý Hoá Đơn</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/check-in/index.html"><i class="bi bi-box-arrow-in-right me-2" style="color: var(--accent-color);"></i>Làm thủ tục Nhận phòng</a></li>
+                <li><a class="dropdown-item" href="${basePath}admin/check-out/index.html"><i class="bi bi-box-arrow-left me-2" style="color: var(--accent-color);"></i>Làm thủ tục Trả phòng</a></li>
                 <li><hr class="dropdown-divider" /></li>
-
-                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi</a></li>
+                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2" style="color: var(--accent-color);"></i>Hồ sơ của tôi</a></li>
                 <li><a class="dropdown-item text-danger fw-bold mt-2" href="#" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
             `);
         } else {
-            // KHÁCH HÀNG: Lịch sử + Hồ sơ
+            // KHÁCH HÀNG
             html.push(`
-                <li><a class="dropdown-item" href="${basePath}home/booking/history.html"><i class="bi bi-clock-history me-2"></i>Lịch sử đặt phòng</a></li>
-                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi</a></li>
+                <li><div class="dropdown-header text-uppercase text-primary-custom fw-bold mt-1" style="font-size: 0.75rem; padding-left: 1rem;">Khách hàng</div></li>
+                <li><a class="dropdown-item" href="${basePath}home/booking/history.html"><i class="bi bi-clock-history me-2" style="color: var(--accent-color);"></i>Lịch sử đặt phòng</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="${basePath}account/profile.html"><i class="bi bi-person-circle me-2" style="color: var(--accent-color);"></i>Hồ sơ của tôi</a></li>
                 <li><a class="dropdown-item text-danger fw-bold mt-2" href="#" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
             `);
         }
@@ -184,14 +212,14 @@ function renderUserMenu(data) {
 
     // Bắt sự kiện Đăng xuất
     const btnLogout = document.getElementById('btnLogout');
-    if(btnLogout) {
+    if (btnLogout) {
         btnLogout.addEventListener('click', async (e) => {
             e.preventDefault();
-            
+
             // Xóa dữ liệu mock trong local storage
             localStorage.removeItem('userRole');
             localStorage.removeItem('username');
-            
+
             // Call API đăng xuất nếu có
             try {
                 // await fetch('http://localhost:8080/api/auth/logout', { method: 'POST' }); // Tạm ẩn để test FrontEnd
@@ -245,12 +273,12 @@ function setupChatBot() {
         // 1. In tin nháº¯n user lÃªn mÃ n hÃ¬nh (pháº£i)
         appendMessage(msg, 'msg-user');
         chatInput.value = '';
-        
+
         // 2. Hiá»‡u á»©ng Loading
         const loadingId = 'loading-' + Date.now();
         appendMessage(
-            '<span class="spinner-border spinner-border-sm text-warning me-2"></span> Luna Ä‘ang xá»­ lÃ½...', 
-            'msg-bot text-muted fst-italic', 
+            '<span class="spinner-border spinner-border-sm text-warning me-2"></span> Luna Ä‘ang xá»­ lÃ½...',
+            'msg-bot text-muted fst-italic',
             loadingId
         );
 
@@ -262,17 +290,17 @@ function setupChatBot() {
                 body: JSON.stringify({ message: msg })
             });
 
-            if(!response.ok) throw new Error("Network response was not ok");
-            
+            if (!response.ok) throw new Error("Network response was not ok");
+
             const data = await response.json();
-            
+
             // 4. XÃ³a loading, hiá»ƒn thá»‹ káº¿t quáº£
             document.getElementById(loadingId)?.remove();
-            
+
             // Xá»­ lÃ½ xuá»‘ng dÃ²ng
             const formatAnswer = data.answer.replace(/\n/g, "<br>");
             appendMessage(formatAnswer, 'msg-bot shadow-sm');
-            
+
         } catch (error) {
             document.getElementById(loadingId)?.remove();
             appendMessage('<i class="bi bi-wifi-off me-2"></i>Lá»—i káº¿t ná»‘i Python Server (Port 5000) - AI Äang Ngá»§!', 'msg-bot bg-danger text-white border-0');

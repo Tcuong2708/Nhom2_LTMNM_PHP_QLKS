@@ -16,18 +16,20 @@ function showAlert(message, type = 'success') {
 
 async function fetchCheckinData() {
     const tbody = document.getElementById('checkin-table-body');
-    const mockCheckinInvoices = [
-        { id: 3, hoTen: 'Lê Hoàng C', idTaiKhoan: 10, sdt: '0912345678', ngayCheckIn: '2026-06-18', ngayCheckOut: '2026-06-20', totalPrice: 5400000, maPhong: null },
-        { id: 4, hoTen: 'Khách Vãng Lai', idTaiKhoan: null, sdt: '0999888777', ngayCheckIn: '2026-06-18', ngayCheckOut: '2026-06-19', totalPrice: 1500000, maPhong: 301 }
-    ];
-
-    const mockEmptyRooms = [
-        { id: 101 }, { id: 102 }, { id: 201 }, { id: 202 }
-    ];
 
     try {
-        const invoices = mockCheckinInvoices;
-        const emptyRooms = mockEmptyRooms;
+        const [invoicesResponse, roomsResponse] = await Promise.all([
+            fetch(`${API_URL}/init`),
+            fetch('http://localhost:8080/api/rooms/map')
+        ]);
+        
+        if (!invoicesResponse.ok || !roomsResponse.ok) {
+            throw new Error('Lỗi fetch API từ Backend');
+        }
+        
+        const invoices = await invoicesResponse.json();
+        const allRooms = await roomsResponse.json();
+        const emptyRooms = allRooms.filter(r => r.maTrangThai === 1);
         
         if (invoices.length === 0) {
             tbody.innerHTML = `
@@ -369,52 +371,18 @@ async function searchBookingCode(event) {
     const codeInput = document.getElementById('bookingCodeInput').value.trim();
     if (!codeInput) return;
 
-    // TODO: Khi nối với Backend thật, hãy dùng đoạn mã fetch này:
-    /*
     try {
         const response = await fetch(`${API_URL}/search?code=${codeInput}`);
-        if (!response.ok) throw new Error('Không tìm thấy mã đặt phòng');
         const data = await response.json();
+        
+        // Cần xử lý nếu không tìm thấy (backend mock hiện tại trả về kết quả demo)
+        if (!response.ok || !data.hoTen) {
+             throw new Error('Không tìm thấy thông tin cho mã đặt phòng: ' + codeInput);
+        }
+        
         showSearchResultModal(data);
     } catch (error) {
         showAlert(error.message, 'danger');
-    }
-    */
-
-    // DỮ LIỆU GIẢ LẬP (MOCK DATA) ĐỂ DEMO
-    const mockDatabase = {
-        'BOOK-123': {
-            hoTen: 'Nguyễn Văn A',
-            ngayCheckIn: '2026-06-18T14:00:00',
-            ngayCheckOut: '2026-06-20T12:00:00',
-            trangThai: 'PAID' // Đã thanh toán
-        },
-        'BOOK-456': {
-            hoTen: 'Trần Thị B',
-            ngayCheckIn: '2026-06-19T14:00:00',
-            ngayCheckOut: '2026-06-21T12:00:00',
-            trangThai: 'UNPAID' // Chưa thanh toán
-        },
-        'BOOK-789': {
-            hoTen: 'Lê Văn C',
-            ngayCheckIn: '2026-05-10T14:00:00',
-            ngayCheckOut: '2026-05-12T12:00:00',
-            trangThai: 'CANCELLED' // Đã hủy
-        },
-        'BOOK-000': {
-            hoTen: 'Phạm Thị D',
-            ngayCheckIn: '2026-05-01T14:00:00',
-            ngayCheckOut: '2026-05-03T12:00:00',
-            trangThai: 'CHECKED_OUT' // Đã trả phòng
-        }
-    };
-
-    const searchResult = mockDatabase[codeInput.toUpperCase()];
-    
-    if (searchResult) {
-        showSearchResultModal(searchResult);
-    } else {
-        showAlert(`Không tìm thấy thông tin cho mã đặt phòng: ${codeInput}`, 'danger');
     }
 }
 

@@ -16,13 +16,20 @@ function showAlert(message, type = 'success') {
 
 async function fetchCheckoutData() {
     const tbody = document.getElementById('checkout-table-body');
-    const mockCheckout = [
-        { id: 1, hoTen: 'Nguyễn Văn A', maPhong: 101, ngayCheckIn: '2026-06-15', ngayCheckOut: '2026-06-18', ghiChu: 'Khách VIP' },
-        { id: 2, hoTen: 'Trần Thị B', maPhong: 202, ngayCheckIn: '2026-06-16', ngayCheckOut: '2026-06-18', ghiChu: 'Đặt qua CHATBOT' }
-    ];
 
     try {
-        const invoices = mockCheckout;
+        const response = await fetch(`${API_URL}/invoices`);
+        if (!response.ok) throw new Error('Lỗi fetch API');
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomIdFilter = urlParams.get('roomId');
+        
+        let invoices = await response.json();
+        
+        // Nếu có truyền roomId từ Sơ đồ phòng sang, ta chỉ hiển thị hóa đơn của phòng đó
+        if (roomIdFilter) {
+            invoices = invoices.filter(inv => inv.maPhong == roomIdFilter);
+        }
         
         if (!invoices || invoices.length === 0) {
             tbody.innerHTML = `

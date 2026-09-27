@@ -16,14 +16,12 @@ function showAlert(message, type = 'success') {
 
 async function fetchInvoices() {
     const tbody = document.getElementById('invoice-table-body');
-    const mockInvoices = [
-        { id: 1, hoTen: 'Nguyễn Văn A', sdt: '0901234567', ngayDat: '2026-06-15', ngayCheckIn: '2026-06-18', ngayCheckOut: '2026-06-20', totalPrice: 3600000 },
-        { id: 2, hoTen: 'Trần Thị B', sdt: '0987654321', ngayDat: '2026-06-16', ngayCheckIn: '2026-06-17', ngayCheckOut: '2026-06-19', totalPrice: 2400000 },
-        { id: 3, hoTen: 'Lê Hoàng C', sdt: '0912345678', ngayDat: '2026-06-10', ngayCheckIn: '2026-06-12', ngayCheckOut: '2026-06-14', totalPrice: 5400000 }
-    ];
 
     try {
-        const invoices = mockInvoices;
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Lỗi fetch API');
+        
+        const invoices = await response.json();
         
         if (!invoices || invoices.length === 0) {
             tbody.innerHTML = `

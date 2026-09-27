@@ -33,8 +33,9 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg sticky-top glass-navbar">
     <div class="container">
-      <a class="navbar-brand" href="{{ url('/') }}">
-        <i class="bi bi-buildings-fill me-2"></i>MAY HOTEL
+      <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
+        <img src="{{ asset('images/Logo web.png') }}" alt="Logo" style="height: 32px; object-fit: contain; margin-right: 8px;">
+        <span class="fw-bold" style="letter-spacing: 1px;">MAY HOTEL</span>
       </a>
       
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -43,12 +44,14 @@
       
       <div class="collapse navbar-collapse" id="navMenu">
         <ul class="navbar-nav ms-auto align-items-center">
-          <li class="nav-item"><a class="nav-link {{ Request::is('/') ? 'active-menu' : '' }}" href="{{ url('/') }}">Trang chủ</a></li>
-          <li class="nav-item"><a class="nav-link {{ Request::is('info') ? 'active-menu' : '' }}" href="{{ url('/info') }}">Thông tin</a></li>
-          <li class="nav-item">
-              <a class="nav-link fw-bold px-3 py-2 text-uppercase text-navy {{ Request::is('rooms*') ? 'active-menu' : '' }}" href="{{ url('/rooms') }}">Phòng Nghỉ</a>
-          </li>
-          <li class="nav-item"><a class="nav-link {{ Request::is('reviews') ? 'active-menu' : '' }}" href="{{ url('/reviews') }}">Đánh giá</a></li>
+          @if(!Auth::check() || (Auth::check() && Auth::user()->RoleID == 3))
+            <li class="nav-item"><a class="nav-link {{ Request::is('/') ? 'active-menu' : '' }}" href="{{ url('/') }}">Trang chủ</a></li>
+            <li class="nav-item"><a class="nav-link {{ Request::is('info') ? 'active-menu' : '' }}" href="{{ url('/info') }}">Thông tin</a></li>
+            <li class="nav-item">
+                <a class="nav-link fw-bold px-3 py-2 text-uppercase text-navy {{ Request::is('rooms*') ? 'active-menu' : '' }}" href="{{ url('/rooms') }}">Phòng Nghỉ</a>
+            </li>
+            <li class="nav-item"><a class="nav-link {{ Request::is('reviews') ? 'active-menu' : '' }}" href="{{ url('/reviews') }}">Đánh giá</a></li>
+          @endif
 
           <!-- Dropdown Tài khoản User -->
           <li class="nav-item dropdown" id="user-menu-container">
@@ -119,12 +122,16 @@
       @yield('content')
   </div>
 
+  @if(!Auth::check() || (Auth::check() && Auth::user()->RoleID == 3))
   <!-- FOOTER -->
   <footer>
     <div class="container">
       <div class="row gy-5">
         <div class="col-md-4">
-          <h5 class="brand-footer"><i class="bi bi-buildings-fill me-2"></i>MAY HOTEL</h5>
+          <div class="brand-footer mb-3 d-flex align-items-center">
+             <img src="{{ asset('images/Logo web.png') }}" alt="Logo" style="height: 40px; object-fit: contain; margin-right: 12px;">
+             <span class="fw-bold fs-4">MAY HOTEL</span>
+          </div>
           <p>Trải nghiệm sự sang trọng và tiện nghi bậc nhất. Chúng tôi cam kết mang đến cho bạn những kỳ nghỉ không thể nào quên.</p>
         </div>
         <div class="col-md-4">
@@ -152,6 +159,7 @@
       </div>
     </div>
   </footer>
+  @endif
 
   <!-- TOAST -->
   <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
@@ -166,9 +174,36 @@
     </div>
   </div>
 
+  <!-- CHATBOT -->
+  <div id="chat-circle">
+    <i class="bi bi-chat-dots-fill fs-3"></i>
+  </div>
+  
+  <div class="chat-box" id="chat-box">
+    <div class="chat-box-header">
+      <div>
+        <i class="bi bi-robot me-2 fs-5"></i>
+        <span class="fw-bold">Hỗ trợ trực tuyến</span>
+      </div>
+      <span id="chat-box-close" class="fs-5" style="cursor:pointer; transition: 0.3s;"><i class="bi bi-x-lg"></i></span>
+    </div>
+    
+    <div class="chat-box-body" id="chat-logs">
+      <div class="msg-bot shadow-sm">
+        Xin chào! Tôi là trợ lý ảo AI của May Hotel. Tôi có thể giúp gì cho bạn? <br />
+        <small class="text-muted mt-1 d-block">(Ví dụ: "Giá phòng bao nhiêu", "Có hồ bơi không")</small>
+      </div>
+    </div>
+    
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" class="form-control" placeholder="Nhập tin nhắn..." autocomplete="off" />
+      <button id="chat-submit" class="btn-send"><i class="bi bi-send-fill"></i></button>
+    </div>
+  </div>
+
   <!-- Javascript -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ asset('app.js') }}"></script>
+  <script src="{{ asset('app.js') }}?v={{ time() }}"></script>
   
   @stack('scripts')
 </body>

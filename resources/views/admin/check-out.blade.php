@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('admin/check-out/css/index.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/check-out-assets/css/index.css') }}" />
 @endpush
 
 @section('content')
@@ -44,5 +44,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('admin/check-out/js/index.js') }}"></script>
+    <script src="{{ asset('admin/check-out-assets/js/index.js') }}"></script>
 @endpush

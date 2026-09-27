@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('admin/invoice/css/index.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/invoice-assets/css/index.css') }}" />
 @endpush
 
 @section('content')
@@ -13,7 +13,7 @@
                 <h3 class="fw-bold text-uppercase mb-0">
                     <i class="bi bi-file-earmark-text-fill me-2"></i>Danh sách Đơn đặt phòng
                 </h3>
-                <a href="{{ url('/admin/invoice/create') }}" class="btn btn-gold px-4 shadow-sm text-white" style="background: #C5A017;">
+                <a href="{{ url('/admin/invoice-assets/create') }}" class="btn btn-gold px-4 shadow-sm text-white" style="background: #C5A017;">
                     <i class="bi bi-plus-lg me-2"></i>Tạo đơn khách lẻ
                 </a>
             </div>
@@ -48,5 +48,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('admin/invoice/js/index.js') }}"></script>
+    <script src="{{ asset('admin/invoice-assets/js/index.js') }}"></script>
 @endpush

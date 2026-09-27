@@ -1,32 +1,26 @@
-const mockRooms = [
-    { id: 101, maLoai: 'Standard', price: 500000, maTrangThai: 1 },
-    { id: 102, maLoai: 'Standard', price: 500000, maTrangThai: 2 },
-    { id: 103, maLoai: 'Standard', price: 500000, maTrangThai: 3 },
-    { id: 104, maLoai: 'Standard', price: 500000, maTrangThai: 1 },
-    { id: 201, maLoai: 'Deluxe', price: 1000000, maTrangThai: 2 },
-    { id: 202, maLoai: 'Deluxe', price: 1000000, maTrangThai: 1 },
-    { id: 203, maLoai: 'Deluxe', price: 1000000, maTrangThai: 1 },
-    { id: 301, maLoai: 'Suite', price: 2000000, maTrangThai: 3 },
-    { id: 302, maLoai: 'Suite', price: 2000000, maTrangThai: 2 },
-    { id: 303, maLoai: 'Suite', price: 2000000, maTrangThai: 1 },
-];
+const API_URL = 'http://localhost:8080/api/rooms/map';
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchRoomMap();
 });
 
-function fetchRoomMap() {
+async function fetchRoomMap() {
     const grid = document.getElementById('room-grid');
     const spinner = document.getElementById('loading-spinner');
     
-    spinner.style.display = 'none';
+    try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Failed to fetch');
+        const rooms = await response.json();
+        
+        spinner.style.display = 'none';
 
-    if (!mockRooms || mockRooms.length === 0) {
-        grid.innerHTML = `<div class="w-100 text-center py-5 text-muted">Không có dữ liệu phòng.</div>`;
-        return;
-    }
+        if (!rooms || rooms.length === 0) {
+            grid.innerHTML = `<div class="w-100 text-center py-5 text-muted">Không có dữ liệu phòng.</div>`;
+            return;
+        }
 
-    grid.innerHTML = mockRooms.map(room => {
+        grid.innerHTML = rooms.map(room => {
         let statusClass = '';
         let actionHtml = '';
 
@@ -70,4 +64,15 @@ function fetchRoomMap() {
         </div>
         `;
     }).join('');
+    
+    } catch (error) {
+        console.error('Error fetching room map:', error);
+        spinner.style.display = 'none';
+        grid.innerHTML = `
+            <div class="w-100 text-center py-5 text-danger">
+                <i class="bi bi-exclamation-triangle fs-2 d-block mb-2 opacity-50"></i>
+                <p>Lỗi kết nối API lấy sơ đồ phòng. Hãy đảm bảo API ${API_URL} đang hoạt động.</p>
+            </div>
+        `;
+    }
 }
